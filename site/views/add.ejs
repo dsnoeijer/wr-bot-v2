@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name=”robots” content=”noindex,nofollow”>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>WoW Realms Trivia Bot - Add a Question</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/styles.css">
+</head>
+
+<body>
+    <div class="navbar navbar-default navbar-static-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/">Wow Realms Trivia Bot</a>
+            </div>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="/questions">Show all questions</a></li>
+                <li><a href="/add">Add new question</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="msg"></div>
+        <form id="form">
+            <div class="form-group row">
+                <label for="question" class="col-sm-2 col-form-label">Question</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="question" placeholder="Your question">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="answers" class="col-sm-2 col-form-label">Answer(s)</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="answers"
+                        placeholder="Seperate multiple answers with a ,">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="firstHint" class="col-sm-2 col-form-label">First hint</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="firstHint"
+                        placeholder="First hint for this question. Insert an answer and click scramble if you don't have a hint">
+                    <button type="button" id="scramble">Scramble</button>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="secondHint" class="col-sm-2 col-form-label">Second hint</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="secondHint"
+                        placeholder="Second hint for this question. Insert an answer and click blanks to generate a hint with blank spaces.">
+                    <button type="button" id="blanks">Blanks</button>
+                </div>
+            </div>
+            <br>
+            <div class="form-group">
+                <label for="imageUpload">If your question needs an image, upload it here</label>
+                <input type="file" class="form-control-file" id="files">
+            </div>
+            <br>
+            <div class="form-group">
+                <input type="submit" value="submit" id="formSubmit">
+            </div>
+        </form>
+    </div>
+    <script type="text/javascript">
+        const scramble = document.getElementById("scramble");
+        const blanks = document.getElementById("blanks");
+        blankArray = [];
+
+        scramble.addEventListener("click", () => {
+            const str = document.getElementById("firstHint").value;
+
+            shuffle = str =>
+                [...str]
+                    .reduceRight((res, _, __, arr) => (
+                        res.push(...arr.splice(0 | Math.random() * arr.length, 1)),
+                        res), [])
+                    .join('');
+
+            document.getElementById("firstHint").value = shuffle(str);
+        })
+
+        blanks.addEventListener("click", () => {
+
+            blankArray.push(document.getElementById("secondHint").value);
+
+            function replace(str) {
+                return str.split("").map(char =>
+                    char === ' ' ? ' ' : Math.random() > 0.35 ? "#" : char).join("");
+            }
+
+            document.getElementById("secondHint").value = replace(blankArray[0]);
+        })
+    </script>
+    <script type="text/javascript">
+        const form = document.getElementById("form");
+
+        form.addEventListener("submit", submitForm);
+
+        function submitForm(e) {
+            blankArray = [];
+            e.preventDefault();
+            const name = document.getElementById("question");
+            const answers = document.getElementById("answers");
+            const firstHint = document.getElementById("firstHint");
+            const secondHint = document.getElementById("secondHint");
+            const form = document.getElementById("form");
+            const msg = document.getElementById("msg");
+            const formData = new FormData();
+            formData.append("name", name.value);
+            formData.append("answers", answers.value);
+            formData.append("firstHint", firstHint.value);
+            formData.append("secondHint", secondHint.value);
+
+            for (let i = 0; i < files.files.length; i++) {
+                formData.append("files", files.files[i]);
+            }
+            fetch("/uploads", {
+                method: 'POST',
+                body: formData
+            })
+                .then((res) => {
+                    form.reset();
+                    msg.innerHTML = "<p>Question has been added to the database!</p>";
+                    setTimeout(() => {
+                        msg.innerHTML = "";
+                    }, 3000);
+                })
+                .catch((err) => {
+                    msg.innerHTML = "<p>There was an error uploading your question.!</p>";
+                });
+        }
+    </script>
+
+</body>
+
+</html>

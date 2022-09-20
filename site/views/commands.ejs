@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name=”robots” content=”noindex”>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Wow Realms Trivia Bot</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/styles.css">
+</head>
+
+<body>
+    <div class="navbar navbar-default navbar-static-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/">Wow Realms Trivia Bot</a>
+            </div>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="/questions">Show all questions</a></li>
+                <li><a href="/add">Add question</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <div>
+            <h2>Admin only commands</h2>
+            <p>
+                <strong>!start</strong> <br />
+                Starts the triva
+            </p>
+            <p>
+                <strong>!stop</strong> <br />
+                Stops the triva
+            </p>
+            <p>
+                <strong>!reload</strong><br />
+                Toggles whether or not data should be reset inbetween rounds. By default points are reset after a round.
+            </p>
+            <p>
+                <strong>!pause</strong> <br />
+                Stops the triva
+            </p>
+            <p>
+                <strong>!continue</strong> <br />
+                Continues the trivia after a pause
+            </p>
+            <p>
+                <strong>!questions X</strong> <br />
+                Changes the number of questions, e.g.: !questions 10
+            </p>
+            <p>
+                <strong>!anyone start</strong> <br />
+                Toggles the ability for regular users to start trivia. By default only admins can start.
+            </p>
+            <p>
+                <strong>!settings</strong> <br />
+                Reloads settings.
+            </p>
+        </div>
+
+        <div>
+            <h2>Commands for all users</h2>
+            <p>
+                <strong>!info</strong> <br />
+                Send user a DM with their current score and place
+            </p>
+            <p>
+                <strong>!top</strong> <br />
+                Sends user a DM with the top ten
+            </p>
+            <p>
+                <strong>!results</strong> <br />
+                Sends user a DM with the last results
+            </p>
+
+        </div>
+</body>
+
+</html>

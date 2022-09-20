@@ -1,0 +1,6 @@
+node_modules/
+.env
+tt.txt
+site/uploads
+site/route.rest
+site/mdb.js
