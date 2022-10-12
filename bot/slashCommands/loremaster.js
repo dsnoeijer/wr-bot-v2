@@ -38,4 +38,5 @@ module.exports = {
             interaction.reply({ content: "Only Admins can currently start a Loremaster round", ephemeral: true });
         }
     }
+
 }

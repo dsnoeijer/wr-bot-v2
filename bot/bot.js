@@ -4,9 +4,9 @@ const { REST } = require('@discordjs/rest');
 const { Routes, Collection } = require("discord.js");
 const { BOT } = require('./modules/bot');
 const { reconnect } = require('./modules/reconnect');
-const { settings } = require('./modules/settings');
+// const { settings } = require('./modules/settings');
 const { options } = require('./modules/options');
-const answers = require('./modules/answers');
+// const answers = require('./modules/answers');
 
 BOT.slashCommands = new Collection();
 const slashCommands = [];
@@ -71,21 +71,6 @@ BOT.on("interactionCreate", async interaction => {
 
     }
 })
-
-BOT.on("message", (message) => {
-
-    // if answer is correct
-    if (!options.answered && options.answerArray.some(word => message.content.includes(word))) {
-
-        // check if we are in single or multi point mode
-        if (options.mode === 'single') {
-            answers.single(interaction, options, message);
-        } else {
-            answers.multi(interaction, options, message);
-        }
-    }
-});
-
 
 BOT.on("error", (error) => {
     console.log(error);

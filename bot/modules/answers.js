@@ -1,8 +1,9 @@
 const { BOT } = require('./bot');
 const { askQuestion } = require('./question');
+const { settings } = require('./settings');
 
 
-const multi = (interaction, options, message) => {
+const multi = (options, message, interaction) => {
     let correctUsers = [];
 
     // push the first user in, since collector starts after
@@ -110,10 +111,10 @@ const multi = (interaction, options, message) => {
         if (options.answerImage !== "") { // answer attachments
             fs.readFile(options.answerImage, (err, data) => {
                 if (err) {
-                    console.log(localize("c_attachmentFailure", "${filename}", options.answerImage));
+                    console.log(`c_attachmentFailure ${options.answerImage}`);
                 } else {
                     message.channel.send(winMessage, new Discord.MessageAttachment(data, path.basename(options.answerImage))).catch(err => {
-                        console.log(localize("c_attachmentFailure", "${filename}", options.answerImage));
+                        console.log(`c_attachmentFailure ${options.answerImage}`);
                     });
                 }
             });
@@ -121,10 +122,10 @@ const multi = (interaction, options, message) => {
             message.channel.send({ embeds: [winMessage] });
         }
     });
-    updateTopTen(options);
+    updateTopTen(options, interaction);
 }
 
-const single = (interaction, options, message) => {
+const single = (options, message, interaction) => {
     let timeTaken = message.createdTimestamp - options.questionTimestamp;
     let winnerIndex = -1;
 
@@ -191,20 +192,20 @@ const single = (interaction, options, message) => {
             options.players[winnerIndex].streak = options.roundWinnerStreak;
         }
         if (options.roundWinnerStreak > 5) {
-            message.channel.send(localize("d_streakContinue", "${message.author.toString()}", message.author.toString()));
+            message.channel.send(`*${message.author.toString()} stretches their streak to ${roundWinnerStreak}!*`);
         }
     } else {
         if (options.roundWinnerStreak > 5) {
-            message.channel.send(localize("d_streakBroken", "${message.author.toString()}", message.author.toString()));
+            message.channel.send(`*<@${lastRoundWinner}>'s streak ended at ${roundWinnerStreak} by ${message.author.toString()}!*`);
         }
         options.roundWinnerStreak = 1;
     }
 
     // sends message if they moved up in rank
     if (rank < oldRank && oldRank === options.players.length + 1) {
-        message.channel.send(localize("d_rankUp", "${getOrdinal(rank)}", getOrdinal(rank), "${message.author.toString()}", message.author.toString(), "${rank}", rank, "${getOrdinal(oldRank)}", "—"));
+        message.channel.send(`*${message.author.toString()} has moved up in rank* -- to ${rank})`);
     } else if (rank < oldRank) {
-        message.channel.send(localize("d_rankUp", "${getOrdinal(rank)}", getOrdinal(rank), "${message.author.toString()}", message.author.toString(), "${rank}", rank, "${getOrdinal(oldRank)}", getOrdinal(oldRank)));
+        message.channel.send(`*${message.author.toString()} has moved up in rank* (${oldRank} to ${rank})`);
     }
 
     // keep track of time record for current round
@@ -212,7 +213,7 @@ const single = (interaction, options, message) => {
         options.lastBestTimePlayer = message.author.id;
         options.lastBestTime = timeTaken;
     } else if (timeTaken < options.lastBestTime) { // if the player beat the last best time
-        message.channel.send(localize("d_timeNewRecord", "timeTaken", timeTaken, "${message.author.toString()}", message.author.toString()));
+        message.channel.send(`*${message.author.toString()} broke the current round time record with ${(timeTaken / 1000).toFixed(3)} sec! Previous record holder was <@${lastBestTimePlayer}> with ${(lastBestTime / 1000).toFixed(3)} sec!*`);
         options.lastBestTimePlayer = message.author.id;
         options.lastBestTime = timeTaken;
     }
@@ -221,41 +222,41 @@ const single = (interaction, options, message) => {
     if (options.lastBestStreakPlayer === "null") { // if there is no best streak yet
         options.lastBestStreakPlayer = message.author.id;
         options.lastBestStreak = options.roundWinnerStreak;
-    } else if (roundWinnerStreak > lastBestStreak) { // if the player beat the last best streak
+    } else if (options.roundWinnerStreak > lastBestStreak) { // if the player beat the last best streak
         if (options.lastBestStreakPlayer !== message.author.id) {
-            message.channel.send(localize("d_streakNewRecord", "${message.author.toString()}", message.author.toString()));
+            message.channel.send(`*${message.author.toString()} broke the current round streak record with ${roundWinnerStreak}! Previous record holder was <@${lastBestStreakPlayer}> with ${lastBestStreak}!*`);
         }
         options.lastBestStreakPlayer = message.author.id;
         options.lastBestStreak = options.roundWinnerStreak;
     }
 
     // sends message based on streak
-    for (const element of local.streakMsg) {
-        if (element[0] === options.roundWinnerStreak) {
-            message.channel.send(element[1].replace(new RegExp("\\$\\{BOT\\.user\\.toString\\(\\)\\}", "g"),
-                BOT.user.toString()).replace(new RegExp("\\$\\{message\\.author\\.toString\\(\\)\\}", "g"), message.author.toString()));
-            break;
-        }
-    }
+    // for (const element of settings.local.streakMsg) {
+    //     if (element[0] === options.roundWinnerStreak) {
+    //         message.channel.send(element[1].replace(new RegExp("\\$\\{BOT\\.user\\.toString\\(\\)\\}", "g"),
+    //             BOT.user.toString()).replace(new RegExp("\\$\\{message\\.author\\.toString\\(\\)\\}", "g"), message.author.toString()));
+    //         break;
+    //     }
+    // }
 
-    // sends message based on points
-    for (const element of local.scoreMsg) {
-        if (element[0] === roundWinnerScore) {
-            message.channel.send(element[1].replace(new RegExp("\\$\\{BOT\\.user\\.toString\\(\\)\\}", "g"),
-                BOT.user.toString()).replace(new RegExp("\\$\\{message\\.author\\.toString\\(\\)\\}", "g"), message.author.toString()));
-            break;
-        }
-    }
+    // // sends message based on points
+    // for (const element of settings.local.scoreMsg) {
+    //     if (element[0] === roundWinnerScore) {
+    //         message.channel.send(element[1].replace(new RegExp("\\$\\{BOT\\.user\\.toString\\(\\)\\}", "g"),
+    //             BOT.user.toString()).replace(new RegExp("\\$\\{message\\.author\\.toString\\(\\)\\}", "g"), message.author.toString()));
+    //         break;
+    //     }
+    // }
 
     // say correct answer and who entered it
-    let winMessage = `**${localize("t_roundWinner")}**: ${message.author.toString()} **${localize("t_answer")}**: ${options.answerText} **${localize("t_points")}**: ${options.roundWinnerScore} **${localize("t_place")}**: ${getOrdinal(rank)} **${localize("t_streak")}**: ${options.roundWinnerStreak} **${localize("t_time")}**: ${(timeTaken / 1000).toFixed(3)} ${localize("t_sec")}`;
+    let winMessage = `**Correct**: ${message.author.toString()} **The answer was**: ${options.answerText} **Points**: ${options.roundWinnerScore} **Place**: ${rank} **Streak**: ${options.roundWinnerStreak} **Time**: ${(timeTaken / 1000).toFixed(3)} sec`;
     if (options.answerImage !== "") { // answer attachments
         fs.readFile(options.answerImage, (err, data) => {
             if (err) {
-                console.log(localize("c_attachmentFailure", "${filename}", options.answerImage));
+                console.log(`c_attachmentFailure ${options.answerImage}`);
             } else {
                 message.channel.send(winMessage, new Discord.MessageAttachment(data, path.basename(options.answerImage))).catch(err => {
-                    console.log(localize("c_attachmentFailure", "${filename}", options.answerImage));
+                    console.log(`c_attachmentFailure ${options.answerImage}`);
                     message.channel.send(winMessage);
                 });
             }
@@ -263,21 +264,21 @@ const single = (interaction, options, message) => {
     } else {
         message.channel.send(winMessage);
     }
-    console.log(`${localize("t_roundWinner")}: ${message.author.username} ${message.author.toString()} ${localize("t_answer")}: ${message.content} ${localize("t_points")}: ${options.roundWinnerScore} ${localize("t_place")}: ${getOrdinal(rank)} ${localize("t_streak")}: ${options.roundWinnerStreak} ${localize("t_time")}: ${(timeTaken / 1000).toFixed(3)} ${localize("t_sec")}`);
+    console.log(`Correct: ${message.author.username} ${message.author.toString()} The answer was: ${message.content} Points: ${options.roundWinnerScore} Place: ${rank} Streak: ${options.roundWinnerStreak} Time: ${(timeTaken / 1000).toFixed(3)} sec`);
 
     options.lastRoundWinner = message.author.id;
 
-    updateTopTen(options);
+    updateTopTen(options, interaction);
 }
 
-const updateTopTen = (options) => {
+const updateTopTen = (options, interaction) => {
     let place = 0;
-    options.topTen = localize("t_topTen") + ":";
+    options.topTen = "Top ten:";
     if (options.players.length === 0) {
-        options.topTen = localize("d_topTenDefault");
+        options.topTen = "Top ten:\nNo one yet.";
     }
     while ((place < 10) && (place < options.players.length)) {
-        options.topTen = `${topTen}\n**${getOrdinal(place + 1)} ${localize("t_place")}**: ${options.players[place].name} <@${options.players[place].id}> **${localize("t_points")}**: ${options.players[place].score} **${localize("t_bestStreak")}**: ${options.players[place].streak} **${localize("t_bestTime")}**: ${(options.players[place].bestTime / 1000).toFixed(3)} ${localize("t_sec")} **${localize("t_avgTime")}**: ${(options.players[place].time / options.players[place].score / 1000).toFixed(3)} ${localize("t_sec")}`;
+        options.topTen = `${options.topTen}\n**${place + 1} Place**: ${options.players[place].name} <@${options.players[place].id}> **Points**: ${options.players[place].score} **Streak**: ${options.players[place].streak} **Best time**: ${(options.players[place].bestTime / 1000).toFixed(3)} sec **Avg. time**: ${(options.players[place].time / options.players[place].score / 1000).toFixed(3)} sec`;
         place++;
     }
 

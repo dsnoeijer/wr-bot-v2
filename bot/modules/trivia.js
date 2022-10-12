@@ -5,6 +5,7 @@ const { reconnect } = require('./reconnect');
 const { BOT } = require('./bot');
 const { askQuestion } = require('./question');
 const { settings } = require('./settings');
+const answers = require('./answers');
 
 let versionString = "1.0";
 console.log("The trivia BOT has been launched. (v" + versionString + ")");
@@ -56,6 +57,20 @@ const startTrivia = async (interaction, options) => {
     //         triviaChannel.sendTyping();
     //     }
     // }, Math.max(settings.startTime - 5000, 0));
+
+    BOT.on("messageCreate", (message) => {
+        console.log(options.answerArray[0]);
+        // if answer is correct
+        if (!options.answered && options.answerArray.some(word => message.content.toLowerCase().includes(word.toLowerCase()))) {
+
+            // check if we are in single or multi point mode
+            if (options.mode === 'single') {
+                answers.single(options, message, interaction);
+            } else {
+                answers.multi(options, message, interaction);
+            }
+        }
+    });
 
 }
 

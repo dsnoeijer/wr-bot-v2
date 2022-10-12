@@ -142,6 +142,20 @@ function askQuestion(interaction, options) {
     else {
         endTrivia(true, options);
     }
+
+    BOT.on("message", (message) => {
+        console.log(options.answerArray[0]);
+        // if answer is correct
+        if (!options.answered && options.answerArray.some(word => message.content.toLowerCase().includes(word.toLowerCase()))) {
+
+            // check if we are in single or multi point mode
+            if (options.mode === 'single') {
+                answers.single(interaction, options, message);
+            } else {
+                answers.multi(interaction, options, message);
+            }
+        }
+    });
 }
 
 function skipQuestion(interaction, options) {
@@ -178,9 +192,6 @@ function skipQuestion(interaction, options) {
     options.answered = true;
     options.questionTimeout = setTimeout(askQuestion, settings.betweenTime);
     options.typeTimeout = setTimeout(function () {
-        if (options.trivia) {
-            triviaChannel.sendTyping();
-        }
     }, Math.max(settings.betweenTime - 5000, 0));
 }
 

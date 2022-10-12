@@ -1,6 +1,6 @@
 exports.options = {
     reload: false,
-    mode: single,
+    mode: "single",
     questionNum: 1,
     lastRoundWinner: "null",
     roundWinnerScore: 0,
